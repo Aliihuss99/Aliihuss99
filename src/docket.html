@@ -523,7 +523,7 @@ function catColor(name) {
   let h = 0; for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return PAL[h % PAL.length];
 }
-function routineColor(r) { const i = Store.routines.findIndex(x => x.id === r.id); return PAL[(i < 0 ? 0 : i) % PAL.length]; }
+function routineColor() { return 'var(--accent)'; }
 const PRIO = { high: 1, med: 2, low: 3 };
 const PRIO_LABEL = { high: 'P1', med: 'P2', low: 'P3' };
 const DEFAULT_CATS = ['Work', 'Personal', 'Study', 'Health', 'Home', 'Errands'];
