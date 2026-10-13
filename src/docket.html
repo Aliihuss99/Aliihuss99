@@ -414,86 +414,28 @@ const ls = {
 };
 
 /* ================= store =================
-   Cloud mode: the artifact's db (tasks / routines / logs collections).
-   Local mode: the same shape in this device's browser storage. */
+   Everything is kept in this device's browser storage as JSON. */
 const COLLS = ['tasks', 'routines', 'logs'];
 const Store = {
   mode: 'loading',
-  db: null,
   data: { tasks: [], routines: [], logs: [] },
-  ready: new Set(),
-  pending: new Map(),
-  inflight: new Set(),
-  readOnly: false,
+  canSave: true,
 
-  async init() {
-    let db = null;
-    if (window.claude && typeof window.claude.use === 'function') {
-      try { db = await window.claude.use('db'); } catch { db = null; }
-    }
-    if (db) {
-      this.db = db; this.mode = 'cloud';
-      COLLS.forEach(c => {
-        db.collection(c).onSnapshot(snap => {
-          this.data[c] = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-          for (const w of this.pending.values()) if (w.coll === c) this.applyLocal(w);
-          this.ready.add(c); render();
-        }, err => {
-          console.warn('db listener', c, err);
-          if (err && err.code === 'revoked') { this.readOnly = true; toast('Saving is turned off for this view.'); }
-        });
-      });
-    } else {
-      this.mode = 'local';
-      COLLS.forEach(c => { this.data[c] = ls.get('docket.' + c, []); this.ready.add(c); });
-      this.canSave = ls.set('docket.probe', Date.now());
-      // Ask the browser to keep this data instead of clearing it when space runs low.
-      try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
-    }
+  init() {
+    COLLS.forEach(c => { this.data[c] = ls.get('docket.' + c, []); });
+    this.canSave = ls.set('docket.probe', Date.now());
+    // Ask the browser to keep this data instead of clearing it when space runs low.
+    try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
+    this.mode = 'local';
     updateStorePill(); render();
   },
 
-  applyLocal({ coll, id, data }) {
+  write(coll, id, data) {           // data === null deletes
     const arr = this.data[coll].filter(x => x.id !== id);
     if (data) arr.push({ ...data, id });
     this.data[coll] = arr;
-  },
-
-  write(coll, id, data) {           // data === null deletes
-    if (this.readOnly) { toast('This view is read-only.'); return; }
-    const w = { coll, id, data };
-    this.applyLocal(w);
-    if (this.mode === 'local') {
-      if (!ls.set('docket.' + coll, this.data[coll])) toast('Could not save on this device. Storage may be full or blocked.');
-    } else {
-      const k = coll + '/' + id;
-      this.pending.set(k, w);
-      this.flush(k);
-    }
+    if (!ls.set('docket.' + coll, arr)) toast('Could not save on this device. Storage may be full or blocked.');
     render();
-  },
-
-  async flush(k) {
-    if (this.inflight.has(k)) return;
-    const w = this.pending.get(k);
-    if (!w) return;
-    this.pending.delete(k);
-    this.inflight.add(k);
-    try {
-      const ref = this.db.collection(w.coll).doc(w.id);
-      if (w.data) { const { id, ...body } = w.data; await ref.set(body); }
-      else await ref.delete();
-    } catch (e) {
-      console.warn('write failed', e);
-      const code = e && e.code;
-      if (code === 'quota_exceeded') toast('Storage is full. Delete some finished tasks to make room.');
-      else if (code === 'invalid_argument' || code === 'not_granted') { this.readOnly = true; toast('You can view this planner but not change it.'); }
-      else if (code === 'unavailable' && !w.retried) { w.retried = true; this.pending.set(k, w); setTimeout(() => this.flush(k), 600 + Math.random() * 800); }
-      else toast('A change did not save. Check your connection and try again.');
-    } finally {
-      this.inflight.delete(k);
-      if (this.pending.has(k)) this.flush(k);
-    }
   },
 
   get tasks() { return this.data.tasks; },
@@ -504,7 +446,7 @@ const Store = {
 function updateStorePill() {
   const p = $('#storepill'), t = $('#storetext');
   p.dataset.mode = Store.mode;
-  t.textContent = Store.mode === 'cloud' ? 'Synced to your account' : Store.mode === 'local' ? 'Saved on this iPad' : 'Connecting…';
+  t.textContent = Store.mode === 'local' ? 'Saved on this iPad' : 'Opening…';
   p.title = t.textContent;
 }
 
@@ -701,7 +643,6 @@ function emptyState(title, body, withExamples) {
 }
 
 function storageBanner() {
-  if (Store.mode !== 'local') return '';
   if (Store.canSave === false || location.protocol === 'file:') {
     return `<div class="banner warn"><span><b>Changes here won't be kept.</b> This copy was opened as a file, and iPad doesn't let files save data. Open Docket from its home-screen icon instead, and use Backup &amp; restore to move your tasks across.</span></div>`;
   }
@@ -1122,9 +1063,7 @@ function openRoutine(r) {
 /* ================= backup ================= */
 function openBackup() {
   const nT = Store.tasks.length, nR = Store.routines.length;
-  const where = Store.mode === 'cloud'
-    ? 'Your tasks are synced to your Claude account.'
-    : 'Your tasks are saved on this iPad, inside the Docket app.';
+  const where = 'Your tasks are saved on this iPad, inside the Docket app.';
   openSheet(`
     <h2>Backup &amp; restore</h2>
     <p>${where} A backup file keeps a copy you control: save one now and then, and restore it on any device or in another copy of Docket.</p>
@@ -1143,15 +1082,6 @@ async function exportBackup() {
   COLLS.forEach(c => { payload[c] = Store.data[c]; });
   const json = JSON.stringify(payload, null, 2);
   const filename = `docket-backup-${todayKey()}.json`;
-  if (window.claude && typeof window.claude.use === 'function') {
-    let dl = null;
-    try { dl = await window.claude.use('downloads'); } catch { dl = null; }
-    if (dl) {
-      try { await dl.save({ filename, data: json }); toast('Backup saved.'); }
-      catch (e) { if (!e || e.code !== 'declined') toast('Saving files isn\'t available here.'); }
-      return;
-    }
-  }
   try {
     const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
     const a = document.createElement('a');

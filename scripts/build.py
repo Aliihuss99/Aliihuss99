@@ -1,8 +1,7 @@
 """Build the installable web app in docs/ from src/docket.html.
 
-src/docket.html is written as page content (no <html>/<head>), so it can be
-published as a Claude artifact unchanged. This script wraps it in a full
-document with the home-screen metadata iPad needs, and draws the app icon.
+src/docket.html is written as page content (no <html>/<head>). This script
+wraps it in a full document with the home-screen metadata iPad needs, and draws the app icon.
 """
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
