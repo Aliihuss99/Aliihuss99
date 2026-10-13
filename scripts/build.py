@@ -20,7 +20,7 @@ HEAD = """<!doctype html>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Docket">
-<meta name="theme-color" content="#0f1d3d">
+<meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -40,8 +40,8 @@ MANIFEST = """{
   "start_url": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#edf0f6",
-  "theme_color": "#0f1d3d",
+  "background_color": "#f3f3f3",
+  "theme_color": "#000000",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
@@ -51,16 +51,16 @@ MANIFEST = """{
 
 
 def icon(size: int) -> Image.Image:
-    img = Image.new("RGB", (size, size), "#0f1d3d")
+    img = Image.new("RGB", (size, size), "#000000")
     d = ImageDraw.Draw(img)
     s = size / 512
     # three ledger lines with a tick on the first
     for i, y in enumerate((170, 256, 342)):
         d.rounded_rectangle([200 * s, (y - 14) * s, 400 * s, (y + 14) * s], radius=14 * s,
-                            fill="#ffffff" if i == 0 else "#5f7fcf")
+                            fill="#ffffff" if i == 0 else "#8a8a8a")
         d.rounded_rectangle([108 * s, (y - 30) * s, 168 * s, (y + 30) * s], radius=14 * s,
                             fill="#ffffff" if i == 0 else None, outline="#ffffff", width=max(1, int(10 * s)))
-    d.line([(122 * s, 170 * s), (134 * s, 184 * s), (156 * s, 154 * s)], fill="#0f1d3d", width=max(2, int(12 * s)), joint="curve")
+    d.line([(122 * s, 170 * s), (134 * s, 184 * s), (156 * s, 154 * s)], fill="#000000", width=max(2, int(12 * s)), joint="curve")
     return img
 
 
