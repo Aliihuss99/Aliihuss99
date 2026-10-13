@@ -24,6 +24,11 @@ HEAD = """<!doctype html>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
+<script>
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
 <style>
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); color-scheme: light; }
 body { margin: 0; font: 14px system-ui, sans-serif; }
@@ -64,10 +69,31 @@ def icon(size: int) -> Image.Image:
     return img
 
 
+SW = """// Keeps Docket working offline. Network first so updates arrive; cache as fallback.
+const CACHE = "docket-v1";
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
+self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
+self.addEventListener("activate", e => {
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+});
+self.addEventListener("fetch", e => {
+  if (e.request.method !== "GET") return;
+  e.respondWith(
+    fetch(e.request).then(res => {
+      if (res.ok || res.type === "opaque") { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
+      return res;
+    }).catch(() => caches.match(e.request).then(r => r || (e.request.mode === "navigate" ? caches.match("./index.html") : undefined)))
+  );
+});
+"""
+
+
 def main() -> None:
     OUT.mkdir(exist_ok=True)
     (OUT / "index.html").write_text(HEAD + SRC.read_text() + "\n</body>\n</html>\n")
     (OUT / "manifest.webmanifest").write_text(MANIFEST)
+    (OUT / "sw.js").write_text(SW)
+    (OUT / ".nojekyll").write_text("")
     for n in (180, 192, 512):
         icon(n).save(OUT / f"icon-{n}.png")
     print("built", OUT)

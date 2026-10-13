@@ -11,6 +11,11 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
+<script>
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
 <style>
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); color-scheme: light; }
 body { margin: 0; font: 14px system-ui, sans-serif; }
@@ -253,6 +258,9 @@ button { cursor: pointer; }
 .prio.p3 { border-color: var(--c-teal); color: var(--c-teal); }
 .notes-ico { width: 13px; height: 13px; }
 
+.banner.warn { border-style: solid; border-color: var(--crit); color: var(--ink); background: color-mix(in srgb, var(--crit) 10%, var(--surface)); }
+.sheet p { margin: 0; color: var(--muted); }
+.sheet .stack { display: flex; flex-direction: column; gap: 10px; }
 .banner { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-radius: var(--r); border: 1px dashed var(--line); color: var(--muted); font-size: 13.5px; }
 .banner .spacer { flex: 1; }
 .empty { text-align: center; padding: 40px 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; color: var(--muted); }
@@ -339,6 +347,7 @@ table.tracker { border-collapse: separate; border-spacing: 0; font-size: 13px; }
   .board { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
+  .hide-sm { display: none; }
   .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
   .rail {
     order: 2; flex-direction: row; gap: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
@@ -380,6 +389,7 @@ table.tracker { border-collapse: separate; border-spacing: 0; font-size: 13px; }
         <div class="sub" id="vsub"></div>
       </div>
       <div class="spacer"></div>
+      <button class="btn" id="backupbtn" type="button" aria-label="Backup and restore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 17v3h16v-3"/></svg><span class="hide-sm">Backup</span></button>
       <button class="btn primary" id="newtask" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>New task</button>
     </header>
     <section class="view" id="view" aria-live="polite"></section>
@@ -462,6 +472,9 @@ const Store = {
     } else {
       this.mode = 'local';
       COLLS.forEach(c => { this.data[c] = ls.get('docket.' + c, []); this.ready.add(c); });
+      this.canSave = ls.set('docket.probe', Date.now());
+      // Ask the browser to keep this data instead of clearing it when space runs low.
+      try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
     }
     updateStorePill(); render();
   },
@@ -517,7 +530,7 @@ const Store = {
 function updateStorePill() {
   const p = $('#storepill'), t = $('#storetext');
   p.dataset.mode = Store.mode;
-  t.textContent = Store.mode === 'cloud' ? 'Synced to your account' : Store.mode === 'local' ? 'Saved on this device' : 'Connecting…';
+  t.textContent = Store.mode === 'cloud' ? 'Synced to your account' : Store.mode === 'local' ? 'Saved on this iPad' : 'Connecting…';
   p.title = t.textContent;
 }
 
@@ -711,6 +724,14 @@ function emptyState(title, body, withExamples) {
     <button class="btn primary" type="button" data-act="new">Add a task</button>
     ${withExamples && !hasExamples() ? '<button class="btn" type="button" data-act="examples">Load example tasks</button>' : ''}
   </div></div>`;
+}
+
+function storageBanner() {
+  if (Store.mode !== 'local') return '';
+  if (Store.canSave === false || location.protocol === 'file:') {
+    return `<div class="banner warn"><span><b>Changes here won't be kept.</b> This copy was opened as a file, and iPad doesn't let files save data. Open Docket from its home-screen icon instead, and use Backup &amp; restore to move your tasks across.</span></div>`;
+  }
+  return '';
 }
 
 function exampleBanner() {
@@ -958,7 +979,7 @@ function render() {
   $('#vsub').textContent = `${WD[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} · Week ${isoWeek(d)}`;
 
   if (Store.mode === 'loading') { view.innerHTML = '<div class="card empty"><strong>Opening your planner…</strong><span>Loading your tasks.</span></div>'; return; }
-  view.innerHTML = ui.view === 'tasks' ? viewTasks() : ui.view === 'board' ? viewBoard() : ui.view === 'routines' ? viewRoutines() : viewDashboard();
+  view.innerHTML = storageBanner() + (ui.view === 'tasks' ? viewTasks() : ui.view === 'board' ? viewBoard() : ui.view === 'routines' ? viewRoutines() : viewDashboard());
 
   if (focusId) {
     const el = document.getElementById(focusId);
@@ -1040,12 +1061,14 @@ function openSheet(html, onSubmit, focusSel, onDelete) {
 }
 function closeSheet() { backdrop.hidden = true; sheet.innerHTML = ''; sheetSubmit = null; sheetDelete = null; if (lastFocus && lastFocus.isConnected) lastFocus.focus({ preventScroll: true }); }
 backdrop.addEventListener('click', e => { if (e.target === backdrop) closeSheet(); });
+sheet.addEventListener('change', e => { if (e.target.id === 'f-import' && e.target.files[0]) importBackup(e.target.files[0]); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !backdrop.hidden) closeSheet(); });
 sheet.addEventListener('submit', e => { e.preventDefault(); if (sheetSubmit) sheetSubmit(); });
 sheet.addEventListener('click', e => {
   const b = e.target.closest('[data-sact]'); if (!b) return;
   const a = b.dataset.sact;
   if (a === 'cancel') closeSheet();
+  if (a === 'export') exportBackup();
   if (a === 'due') { $('#f-due').value = b.dataset.v; }
   if (a === 'prio') { sheet.querySelectorAll('[data-sact="prio"]').forEach(x => x.setAttribute('aria-pressed', x === b)); }
   if (a === 'delete') {
@@ -1120,6 +1143,69 @@ function openRoutine(r) {
       Store.write('routines', r.id, null); closeSheet();
       toast('Routine deleted.', 'Undo', () => Store.write('routines', r.id, r));
     });
+}
+
+/* ================= backup ================= */
+function openBackup() {
+  const nT = Store.tasks.length, nR = Store.routines.length;
+  const where = Store.mode === 'cloud'
+    ? 'Your tasks are synced to your Claude account.'
+    : 'Your tasks are saved on this iPad, inside the Docket app.';
+  openSheet(`
+    <h2>Backup &amp; restore</h2>
+    <p>${where} A backup file keeps a copy you control: save one now and then, and restore it on any device or in another copy of Docket.</p>
+    <p class="num">${nT} task${nT === 1 ? '' : 's'} · ${nR} routine${nR === 1 ? '' : 's'}</p>
+    <div class="stack">
+      <button class="btn primary" type="button" data-sact="export">Save backup file</button>
+      <label class="btn" for="f-import">Restore from backup file<input type="file" id="f-import" accept=".json,application/json" hidden></label>
+    </div>
+    <p>Restoring adds the backup's tasks and routines. Items already here with the same ID are replaced with the backup's version.</p>
+    <div class="actions"><span class="spacer"></span><button class="btn ghost" type="button" data-sact="cancel">Done</button></div>`, () => closeSheet());
+}
+$('#backupbtn').addEventListener('click', openBackup);
+
+async function exportBackup() {
+  const payload = { app: 'docket', version: 1, exported: new Date().toISOString() };
+  COLLS.forEach(c => { payload[c] = Store.data[c]; });
+  const json = JSON.stringify(payload, null, 2);
+  const filename = `docket-backup-${todayKey()}.json`;
+  if (window.claude && typeof window.claude.use === 'function') {
+    let dl = null;
+    try { dl = await window.claude.use('downloads'); } catch { dl = null; }
+    if (dl) {
+      try { await dl.save({ filename, data: json }); toast('Backup saved.'); }
+      catch (e) { if (!e || e.code !== 'declined') toast('Saving files isn\'t available here.'); }
+      return;
+    }
+  }
+  try {
+    const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast('Backup created. Find it in the Files app under Downloads.');
+  } catch { toast('Could not create the backup file.'); }
+}
+
+function importBackup(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    let d = null;
+    try { d = JSON.parse(r.result); } catch { d = null; }
+    if (!d || d.app !== 'docket') { toast('That file isn\'t a Docket backup.'); return; }
+    const counts = {};
+    COLLS.forEach(c => {
+      counts[c] = 0;
+      (Array.isArray(d[c]) ? d[c] : []).forEach(x => {
+        if (x && typeof x === 'object' && x.id) { Store.write(c, String(x.id), { ...x, id: String(x.id) }); counts[c]++; }
+      });
+    });
+    closeSheet();
+    const pl = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+    toast(`Restored ${pl(counts.tasks, 'task')} and ${pl(counts.routines, 'routine')}.`);
+  };
+  r.onerror = () => toast('Could not read that file.');
+  r.readAsText(file);
 }
 
 /* ================= toast ================= */
