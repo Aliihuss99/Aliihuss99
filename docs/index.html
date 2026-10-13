@@ -24,7 +24,7 @@ img { max-width: 100%; }
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-/* Layout: ledger-style planner in black and white — fixed black rail on the left (bottom tab bar on phones), one scrolling work surface of white sheets on a cool paper ground. */
+/* Layout: ledger-style planner: black and white base with a bright six-colour set for categories, routines and status — fixed black rail on the left (bottom tab bar on phones), one scrolling work surface of white sheets on a cool paper ground. */
 :root {
   --bg: #f3f3f3;
   --surface: #ffffff;
@@ -38,13 +38,21 @@ img { max-width: 100%; }
   --on-navy: #ffffff;
   --rail: #0a0a0a;
   --rail-ink: #cfcfcf;
-  --good: #0a0a0a;
-  --warn: #0a0a0a;
-  --crit: #0a0a0a;
+  --good: #1fa84f;
+  --warn: #e08a00;
+  --crit: #e5244f;
   --good-bg: #ebebeb;
   --warn-bg: #ebebeb;
   --crit-bg: #ebebeb;
   --shadow: 0 1px 2px rgba(0, 0, 0, .05), 0 6px 18px rgba(0, 0, 0, .05);
+  --accent: #ff6a2b;
+  --on-accent: #0a0a0a;
+  --c-pink: #f0388a;
+  --c-sun: #f5b400;
+  --c-teal: #0fa89e;
+  --c-violet: #7357ff;
+  --c-green: #1fa84f;
+  --tint: 14%;
   --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --f-body: "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -55,7 +63,8 @@ img { max-width: 100%; }
     --bg: #000000; --surface: #0e0e0e; --soft: #1c1c1c; --bar2: #3a3a3a; --line: #2a2a2a;
     --ink: #f4f4f4; --muted: #9a9a9a; --navy: #f4f4f4; --navy-2: #bdbdbd; --on-navy: #000000;
     --rail: #000000; --rail-ink: #bdbdbd;
-    --good: #f4f4f4; --warn: #f4f4f4; --crit: #f4f4f4;
+    --good: #4bd47c; --warn: #ffb23d; --crit: #ff5c7a;
+    --accent: #ff7d45; --c-pink: #ff5c9e; --c-sun: #ffc83d; --c-teal: #2fd3c6; --c-violet: #9b88ff; --c-green: #4bd47c; --tint: 20%;
     --good-bg: #1c1c1c; --warn-bg: #1c1c1c; --crit-bg: #1c1c1c;
     --shadow: 0 1px 2px rgba(0,0,0,.4);
     color-scheme: dark;
@@ -65,7 +74,8 @@ img { max-width: 100%; }
   --bg: #000000; --surface: #0e0e0e; --soft: #1c1c1c; --bar2: #3a3a3a; --line: #2a2a2a;
     --ink: #f4f4f4; --muted: #9a9a9a; --navy: #f4f4f4; --navy-2: #bdbdbd; --on-navy: #000000;
     --rail: #000000; --rail-ink: #bdbdbd;
-    --good: #f4f4f4; --warn: #f4f4f4; --crit: #f4f4f4;
+    --good: #4bd47c; --warn: #ffb23d; --crit: #ff5c7a;
+    --accent: #ff7d45; --c-pink: #ff5c9e; --c-sun: #ffc83d; --c-teal: #2fd3c6; --c-violet: #9b88ff; --c-green: #4bd47c; --tint: 20%;
     --good-bg: #1c1c1c; --warn-bg: #1c1c1c; --crit-bg: #1c1c1c;
   --shadow: 0 1px 2px rgba(0,0,0,.4);
   color-scheme: dark;
@@ -93,6 +103,7 @@ button { cursor: pointer; }
   padding: 26px 16px; overflow-y: auto;
 }
 .brand { display: flex; flex-direction: column; padding-inline: 10px; }
+.brand b em { font-style: normal; color: var(--accent); }
 .brand b {
   font-family: var(--f-display); font-weight: 900; font-stretch: 112%;
   font-size: 30px; line-height: .9; letter-spacing: -.01em; color: #ffffff;
@@ -106,7 +117,7 @@ button { cursor: pointer; }
 }
 .navbtn svg { width: 20px; height: 20px; flex: none; }
 .navbtn:hover { background: rgba(255,255,255,.06); }
-.navbtn[aria-current="page"] { background: #ffffff; color: #000000; }
+.navbtn[aria-current="page"] { background: var(--accent); color: #0a0a0a; }
 .navbtn .count { margin-left: auto; font-family: var(--f-mono); font-size: 12px; opacity: .8; }
 .rail-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-inline: 10px; font-size: 12.5px; }
 .store-pill { display: inline-flex; align-items: center; gap: 8px; }
@@ -136,10 +147,11 @@ button { cursor: pointer; }
   padding: 9px 14px; font-weight: 600; font-size: 14px; min-height: 40px;
 }
 .btn:hover { border-color: var(--navy-2); }
-.btn.primary { background: var(--navy); color: var(--on-navy); border-color: var(--navy); }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.06); border-color: var(--accent); }
 .btn.ghost { background: none; border-color: transparent; color: var(--muted); }
 .btn.danger { color: var(--crit); }
-.btn.danger.armed { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.btn.danger.armed { background: var(--crit); border-color: var(--crit); color: #ffffff; }
 .iconbtn { width: 40px; height: 40px; padding: 0; }
 .btn svg { width: 18px; height: 18px; }
 
@@ -153,6 +165,9 @@ button { cursor: pointer; }
 
 /* ---------- dashboard ---------- */
 .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.kpi { background: color-mix(in srgb, var(--k, var(--surface)) var(--tint), var(--surface)); border-color: color-mix(in srgb, var(--k, var(--line)) 35%, var(--line)); }
+.kpi .eyebrow { display: flex; align-items: center; gap: 7px; color: var(--ink); }
+.kpi .eyebrow::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--k, var(--accent)); }
 .kpi { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; }
 .kpi .val { font-family: var(--f-display); font-weight: 800; font-stretch: 110%; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; }
 .kpi .note { font-size: 12.5px; color: var(--muted); }
@@ -165,31 +180,31 @@ button { cursor: pointer; }
 .chart svg { width: 100%; height: auto; display: block; }
 .chart .grid line { stroke: var(--line); stroke-width: 1; }
 .chart .axis text { fill: var(--muted); font-family: var(--f-mono); font-size: 11px; }
-.chart .bar-done { fill: var(--navy); }
+.chart .bar-done { fill: var(--accent); }
 .chart .bar-made { fill: var(--bar2); }
-.chart .bar-now { fill: var(--navy-2); }
+.chart .bar-now { fill: var(--c-pink); }
 .chart .vlabel { fill: var(--ink); font-family: var(--f-mono); font-size: 11px; font-weight: 600; }
 .legend { display: flex; gap: 16px; font-size: 12.5px; color: var(--muted); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 
 .donut .track { stroke: var(--soft); }
-.donut .arc { stroke: var(--navy); transition: stroke-dasharray .5s ease; }
+.donut .arc { stroke: var(--k, var(--accent)); transition: stroke-dasharray .5s ease; }
 .donut text { fill: var(--ink); font-family: var(--f-mono); font-weight: 600; }
 
 .week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
 .day { border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px; min-height: 92px; background: var(--surface); }
-.day.today { border-color: var(--navy); box-shadow: inset 0 0 0 1px var(--navy); }
+.day.today { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: color-mix(in srgb, var(--accent) var(--tint), var(--surface)); }
 .day .dname { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .day .dnum { font-family: var(--f-display); font-weight: 800; font-size: 22px; line-height: 1; }
 .day .dots { display: flex; flex-wrap: wrap; gap: 3px; margin-top: auto; }
 .day .dots i { width: 8px; height: 8px; border-radius: 2px; background: var(--soft); border: 1px solid var(--line); }
-.day .dots i.done { background: var(--navy); border-color: var(--navy); }
-.day .dots i.late { background: var(--surface); border: 2px solid var(--ink); }
+.day .dots i.done { background: var(--c-green); border-color: var(--c-green); }
+.day .dots i.late { background: var(--crit); border-color: var(--crit); }
 
 .catrows { display: flex; flex-direction: column; gap: 12px; }
 .catrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 14px; }
 .catrow .bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--soft); overflow: hidden; }
-.catrow .bar b { display: block; height: 100%; background: var(--navy); border-radius: 4px; }
+.catrow .bar b { display: block; height: 100%; background: var(--k, var(--accent)); border-radius: 4px; }
 
 .ring-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 14px; }
 .ring { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 13px; }
@@ -209,6 +224,8 @@ button { cursor: pointer; }
 
 .group-title { display: flex; align-items: baseline; gap: 10px; margin: 6px 0 8px; }
 .group-title .eyebrow.crit { color: var(--crit); }
+.cat { display: inline-flex; align-items: center; gap: 5px; color: var(--ink); }
+.cat i, .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--k); flex: none; display: inline-block; }
 .group-title .num { font-size: 12px; color: var(--muted); }
 .tasklist { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; }
 .task { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-top: 1px solid var(--line); min-height: 58px; }
@@ -217,22 +234,23 @@ button { cursor: pointer; }
   flex: none; width: 26px; height: 26px; border-radius: 50%;
   border: 2px solid var(--line); background: none; display: grid; place-items: center; padding: 0;
 }
-.check:hover { border-color: var(--navy-2); }
-.check svg { width: 14px; height: 14px; opacity: 0; color: var(--on-navy); }
-.task.done .check { background: var(--navy); border-color: var(--navy); }
+.check:hover { border-color: var(--c-green); }
+.check svg { width: 14px; height: 14px; opacity: 0; color: #ffffff; }
+.task.done .check { background: var(--c-green); border-color: var(--c-green); }
 .task.done .check svg { opacity: 1; }
 .task.done .ttitle { color: var(--muted); text-decoration: line-through; }
 .tbody { flex: 1; min-width: 0; background: none; border: 0; text-align: left; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .ttitle { font-weight: 500; overflow-wrap: anywhere; }
 .tmeta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12.5px; color: var(--muted); }
 .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; background: var(--soft); color: var(--ink); font-size: 12px; font-weight: 500; }
-.chip.late { background: var(--ink); color: var(--surface); }
-.chip.today { background: none; box-shadow: inset 0 0 0 1px var(--ink); color: var(--ink); }
-.chip.doing { background: var(--navy); color: var(--on-navy); }
+.chip.late { background: var(--crit); color: #ffffff; }
+.chip.today { background: var(--c-sun); color: #0a0a0a; }
+.chip.doing { background: var(--c-violet); color: #ffffff; }
 .chip.example { background: none; border: 1px dashed var(--line); color: var(--muted); }
 .prio { font-family: var(--f-mono); font-size: 11.5px; font-weight: 600; padding: 1px 6px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
-.prio.p1 { border-color: var(--ink); background: var(--ink); color: var(--surface); }
-.prio.p2 { border-color: var(--ink); color: var(--ink); }
+.prio.p1 { border-color: var(--crit); background: var(--crit); color: #ffffff; }
+.prio.p2 { border-color: var(--c-sun); background: var(--c-sun); color: #0a0a0a; }
+.prio.p3 { border-color: var(--c-teal); color: var(--c-teal); }
 .notes-ico { width: 13px; height: 13px; }
 
 .banner { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-radius: var(--r); border: 1px dashed var(--line); color: var(--muted); font-size: 13.5px; }
@@ -245,6 +263,7 @@ button { cursor: pointer; }
 .board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .col { background: var(--soft); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 160px; }
 .col-head { display: flex; align-items: center; gap: 8px; padding: 2px 4px 4px; }
+.col-head .dot { width: 11px; height: 11px; }
 .col-head h3 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; }
 .col-head .num { margin-left: auto; font-size: 12px; color: var(--muted); }
 .bcard { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow); }
@@ -261,21 +280,22 @@ table.tracker { border-collapse: separate; border-spacing: 0; font-size: 13px; }
 .tracker th, .tracker td { padding: 0; text-align: center; border-bottom: 1px solid var(--line); }
 .tracker thead th { background: var(--navy); color: var(--on-navy); font-weight: 600; padding: 6px 0; font-size: 11px; }
 .tracker thead th .wd { display: block; font-size: 10px; opacity: .7; font-weight: 500; }
-.tracker thead th.today { background: var(--navy-2); }
+.tracker thead th.today { background: var(--accent); color: #0a0a0a; }
 .tracker th.name, .tracker td.name { position: sticky; left: 0; z-index: 1; text-align: left; min-width: 180px; max-width: 220px; padding: 0 12px; background: var(--surface); border-right: 1px solid var(--line); }
 .tracker thead th.name { background: var(--navy); color: var(--on-navy); z-index: 2; letter-spacing: .08em; text-transform: uppercase; font-size: 11px; }
+.tracker td.name .dot { margin-right: 8px; vertical-align: 1px; }
 .tracker td.name button { background: none; border: 0; padding: 10px 0; text-align: left; width: 100%; font-weight: 500; overflow-wrap: anywhere; }
 .tracker td.cellwrap { width: 32px; min-width: 32px; height: 40px; }
 .tracker td.cellwrap.wkend { background: color-mix(in srgb, var(--soft) 55%, transparent); }
 .cell { width: 24px; height: 24px; border-radius: 6px; border: 1.5px solid var(--line); background: var(--surface); padding: 0; display: inline-grid; place-items: center; }
-.cell[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); }
-.cell[aria-pressed="true"]::after { content: ""; width: 10px; height: 6px; border-left: 2px solid var(--on-navy); border-bottom: 2px solid var(--on-navy); transform: rotate(-45deg) translate(1px, -1px); }
+.cell[aria-pressed="true"] { background: var(--k, var(--accent)); border-color: var(--k, var(--accent)); }
+.cell[aria-pressed="true"]::after { content: ""; width: 10px; height: 6px; border-left: 2px solid #0a0a0a; border-bottom: 2px solid #0a0a0a; transform: rotate(-45deg) translate(1px, -1px); }
 .cell.future { opacity: .45; }
 .tracker td.stat, .tracker th.stat { min-width: 64px; padding: 0 10px; font-family: var(--f-mono); font-variant-numeric: tabular-nums; border-left: 1px solid var(--line); }
 .tracker tfoot td { border-bottom: 0; background: var(--surface); }
 .tracker tfoot td.name { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .daybar { height: 56px; display: flex; align-items: flex-end; justify-content: center; padding: 6px 0 4px; }
-.daybar b { width: 14px; background: var(--navy); border-radius: 3px 3px 0 0; min-height: 2px; }
+.daybar b { width: 14px; background: linear-gradient(to top, var(--accent), var(--c-pink)); border-radius: 3px 3px 0 0; min-height: 2px; }
 .daypct { font-family: var(--f-mono); font-size: 9.5px; color: var(--muted); padding-bottom: 6px; }
 .addroutine { display: flex; gap: 10px; flex-wrap: wrap; }
 .addroutine input[type="text"] { flex: 1 1 220px; }
@@ -340,7 +360,7 @@ table.tracker { border-collapse: separate; border-spacing: 0; font-size: 13px; }
 
 <div class="app">
   <aside class="rail">
-    <div class="brand"><b>DOCKET</b><span>Task planner</span></div>
+    <div class="brand"><b>DOCKET<em>.</em></b><span>Task planner</span></div>
     <nav class="navlist" id="nav" aria-label="Sections">
       <button class="navbtn" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span class="label">Dashboard</span></button>
       <button class="navbtn" data-view="tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6h12M9 12h12M9 18h12"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></svg><span class="label">Tasks</span><span class="count" id="navcount"></span></button>
@@ -517,6 +537,14 @@ const hash = (location.hash || '').slice(1);
 if (['dashboard', 'tasks', 'board', 'routines'].includes(hash)) ui.view = hash;
 
 /* ================= task logic ================= */
+const PAL = ['var(--accent)', 'var(--c-violet)', 'var(--c-teal)', 'var(--c-pink)', 'var(--c-sun)', 'var(--c-green)'];
+const CAT_COLOR = { Work: 'var(--c-violet)', Personal: 'var(--c-pink)', Study: 'var(--c-sun)', Health: 'var(--c-green)', Home: 'var(--c-teal)', Errands: 'var(--accent)' };
+function catColor(name) {
+  if (CAT_COLOR[name]) return CAT_COLOR[name];
+  let h = 0; for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return PAL[h % PAL.length];
+}
+function routineColor(r) { const i = Store.routines.findIndex(x => x.id === r.id); return PAL[(i < 0 ? 0 : i) % PAL.length]; }
 const PRIO = { high: 1, med: 2, low: 3 };
 const PRIO_LABEL = { high: 'P1', med: 'P2', low: 'P3' };
 const DEFAULT_CATS = ['Work', 'Personal', 'Study', 'Health', 'Home', 'Errands'];
@@ -622,10 +650,10 @@ function clearExamples() {
 const hasExamples = () => Store.tasks.some(t => t.example) || Store.routines.some(r => r.example);
 
 /* ================= charts ================= */
-function donut(pct, size = 64, stroke = 9, label) {
+function donut(pct, size = 64, stroke = 9, label, color) {
   const r = (size - stroke) / 2, c = 2 * Math.PI * r, p = Math.max(0, Math.min(100, pct));
   const fs = size >= 80 ? 16 : size >= 60 ? 13 : 11;
-  return `<svg class="donut" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${Math.round(p)} percent">
+  return `<svg class="donut" ${color ? `style="--k:${color}"` : ''} width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${Math.round(p)} percent">
     <circle class="track" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke-width="${stroke}"/>
     <circle class="arc" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke-width="${stroke}" stroke-linecap="${p > 0 && p < 100 ? 'round' : 'butt'}"
       stroke-dasharray="${(c * p / 100).toFixed(2)} ${c.toFixed(2)}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
@@ -668,7 +696,7 @@ function taskRow(t) {
     const cls = isLate(t) ? 'late' : (t.due === todayKey() && !isDone(t) ? 'today' : '');
     chips.push(`<span class="chip ${cls}">${isLate(t) ? 'Overdue · ' : ''}${esc(fmtDue(t.due))}</span>`);
   }
-  if (t.category) chips.push(`<span>${esc(t.category)}</span>`);
+  if (t.category) chips.push(`<span class="cat" style="--k:${catColor(t.category)}"><i></i>${esc(t.category)}</span>`);
   if (t.notes) chips.push(icons.note);
   if (t.example) chips.push('<span class="chip example">Example</span>');
   return `<li class="task ${isDone(t) ? 'done' : ''}" data-id="${esc(t.id)}">
@@ -728,7 +756,7 @@ function viewDashboard() {
   const catMap = {};
   yearTasks.forEach(x => { const c = x.category || 'No category'; (catMap[c] ||= { n: 0, d: 0 }); catMap[c].n++; if (isDone(x)) catMap[c].d++; });
   const catRows = Object.entries(catMap).sort((a, b) => b[1].n - a[1].n).slice(0, 7)
-    .map(([c, v]) => `<div class="catrow"><span>${esc(c)}</span><span class="num">${v.d}/${v.n}</span><span class="bar"><b style="width:${(v.d / v.n * 100).toFixed(1)}%"></b></span></div>`).join('');
+    .map(([c, v]) => `<div class="catrow" style="--k:${catColor(c)}"><span class="cat"><i></i>${esc(c)}</span><span class="num">${v.d}/${v.n}</span><span class="bar"><b style="width:${(v.d / v.n * 100).toFixed(1)}%"></b></span></div>`).join('');
 
   // routines this month
   const mk = monthKey(nowD.getFullYear(), nowD.getMonth());
@@ -738,22 +766,22 @@ function viewDashboard() {
   const rings = rs.map(r => {
     const n = (log.days?.[r.id] || []).length;
     const goal = r.goal || daysIn(nowD.getFullYear(), nowD.getMonth());
-    return `<div class="ring">${donut(n / goal * 100, 72, 9)}<span class="rname">${esc(r.name)}</span><span class="rsub num">${n}/${goal} days</span></div>`;
+    return `<div class="ring">${donut(n / goal * 100, 72, 9, undefined, routineColor(r))}<span class="rname">${esc(r.name)}</span><span class="rsub num">${n}/${goal} days</span></div>`;
   }).join('');
 
   const empty = !tasks.length && !rs.length;
   return `
     ${empty ? emptyState('Nothing on the docket yet', 'Add your first task and this dashboard fills in with your progress, month by month.', true) : exampleBanner()}
     <div class="kpis">
-      <div class="card kpi"><span class="eyebrow">Open tasks</span><span class="val">${open.length}</span><span class="note">${doing} in progress</span></div>
-      <div class="card kpi"><span class="eyebrow">Due today</span><span class="val">${dueToday}</span><span class="note ${late ? 'delta-down' : ''}">${late ? `${late} overdue` : 'Nothing overdue'}</span></div>
-      <div class="card kpi"><span class="eyebrow">Done in ${MON[refM]}</span><span class="val">${thisM}</span><span class="note ${delta > 0 ? 'delta-up' : delta < 0 ? 'delta-down' : ''}">${delta === 0 ? 'Same as' : (delta > 0 ? '+' : '−') + Math.abs(delta) + ' vs'} ${refM > 0 ? MON[refM - 1] : 'last month'}</span></div>
-      <div class="card kpi donut-kpi">${donut(rate, 76, 10)}<div><span class="eyebrow">${Y} completion</span><span class="note num">${yearDone} of ${yearTasks.length} tasks</span></div></div>
+      <div class="card kpi" style="--k:var(--c-violet)"><span class="eyebrow">Open tasks</span><span class="val">${open.length}</span><span class="note">${doing} in progress</span></div>
+      <div class="card kpi" style="--k:var(--c-sun)"><span class="eyebrow">Due today</span><span class="val">${dueToday}</span><span class="note ${late ? 'delta-down' : ''}">${late ? `${late} overdue` : 'Nothing overdue'}</span></div>
+      <div class="card kpi" style="--k:var(--c-green)"><span class="eyebrow">Done in ${MON[refM]}</span><span class="val">${thisM}</span><span class="note ${delta > 0 ? 'delta-up' : delta < 0 ? 'delta-down' : ''}">${delta === 0 ? 'Same as' : (delta > 0 ? '+' : '−') + Math.abs(delta) + ' vs'} ${refM > 0 ? MON[refM - 1] : 'last month'}</span></div>
+      <div class="card kpi donut-kpi" style="--k:var(--accent)">${donut(rate, 76, 10)}<div><span class="eyebrow">${Y} completion</span><span class="note num">${yearDone} of ${yearTasks.length} tasks</span></div></div>
     </div>
 
     <div class="card chart">
       <div class="card-head"><h2>Monthly progress</h2>
-        <span class="legend"><span><i style="background:var(--bar2)"></i>Added</span><span><i style="background:var(--navy)"></i>Completed</span></span>
+        <span class="legend"><span><i style="background:var(--bar2)"></i>Added</span><span><i style="background:var(--accent)"></i>Completed</span></span>
         <span class="meta monthnav">
           <button class="btn ghost iconbtn" type="button" data-act="year" data-d="-1" aria-label="Previous year">${icons.left}</button>
           <span class="num" style="font-weight:600;color:var(--ink)">${Y}</span>
@@ -833,13 +861,13 @@ function viewBoard() {
     items = k === 'done' ? items.sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0)).slice(0, 15) : items.sort(sortOpen);
     const cards = items.map(t => `<div class="bcard" data-id="${esc(t.id)}">
       <button class="ttitle" type="button" data-act="edit">${esc(t.title)}</button>
-      <div class="tmeta"><span class="prio p${PRIO[t.priority] || 2}">${PRIO_LABEL[t.priority] || 'P2'}</span>${t.due ? `<span class="chip ${isLate(t) ? 'late' : ''}">${esc(fmtDue(t.due))}</span>` : ''}${t.category ? `<span>${esc(t.category)}</span>` : ''}${t.example ? '<span class="chip example">Example</span>' : ''}</div>
+      <div class="tmeta"><span class="prio p${PRIO[t.priority] || 2}">${PRIO_LABEL[t.priority] || 'P2'}</span>${t.due ? `<span class="chip ${isLate(t) ? 'late' : ''}">${esc(fmtDue(t.due))}</span>` : ''}${t.category ? `<span class="cat" style="--k:${catColor(t.category)}"><i></i>${esc(t.category)}</span>` : ''}${t.example ? '<span class="chip example">Example</span>' : ''}</div>
       <div class="moves">
         ${ci > 0 ? `<button class="btn" type="button" data-act="move" data-s="${cols[ci - 1][0]}">${icons.left}${cols[ci - 1][1]}</button>` : ''}
         ${ci < 2 ? `<button class="btn" type="button" data-act="move" data-s="${cols[ci + 1][0]}">${cols[ci + 1][1]}${icons.right}</button>` : ''}
       </div></div>`).join('');
     const total = open.filter(x => (x.status || 'todo') === k).length;
-    return `<div class="col"><div class="col-head"><h3>${label}</h3><span class="num">${total}</span></div>${cards || '<div class="none">Nothing here</div>'}${k === 'done' && total > 15 ? `<div class="none">Showing latest 15 of ${total}</div>` : ''}</div>`;
+    return `<div class="col"><div class="col-head"><span class="dot" style="--k:${['var(--c-sun)', 'var(--c-violet)', 'var(--c-green)'][ci]}"></span><h3>${label}</h3><span class="num">${total}</span></div>${cards || '<div class="none">Nothing here</div>'}${k === 'done' && total > 15 ? `<div class="none">Showing latest 15 of ${total}</div>` : ''}</div>`;
   }).join('')}</div>`;
 }
 
@@ -862,16 +890,17 @@ function viewRoutines() {
   const perDay = new Array(N + 1).fill(0);
   const rows = rs.map(r => {
     const set = new Set(log.days?.[r.id] || []);
+    const rc = routineColor(r);
     let cells = '';
     for (let d = 1; d <= N; d++) {
       const on = set.has(d); if (on) perDay[d]++;
       const wd = new Date(Y, M, d).getDay();
       const future = isFutureMonth || (isCur && d > nowD.getDate());
-      cells += `<td class="cellwrap ${wd === 0 || wd === 6 ? 'wkend' : ''}"><button class="cell ${future ? 'future' : ''}" type="button" data-act="tick" data-r="${esc(r.id)}" data-d="${d}" aria-pressed="${on}" aria-label="${esc(r.name)}, ${MON[M]} ${d}"></button></td>`;
+      cells += `<td class="cellwrap ${wd === 0 || wd === 6 ? 'wkend' : ''}" style="--k:${rc}"><button class="cell ${future ? 'future' : ''}" type="button" data-act="tick" data-r="${esc(r.id)}" data-d="${d}" aria-pressed="${on}" aria-label="${esc(r.name)}, ${MON[M]} ${d}"></button></td>`;
     }
     const goal = r.goal || N;
     const pct = Math.round(set.size / goal * 100);
-    return `<tr><td class="name"><button type="button" data-act="edit-routine" data-r="${esc(r.id)}">${esc(r.name)}${r.example ? ' <span class="chip example">Example</span>' : ''}</button></td>${cells}<td class="stat">${set.size}</td><td class="stat">${goal}</td><td class="stat">${pct}%</td></tr>`;
+    return `<tr><td class="name"><button type="button" data-act="edit-routine" data-r="${esc(r.id)}"><span class="dot" style="--k:${rc}"></span>${esc(r.name)}${r.example ? ' <span class="chip example">Example</span>' : ''}</button></td>${cells}<td class="stat">${set.size}</td><td class="stat">${goal}</td><td class="stat">${pct}%</td></tr>`;
   }).join('');
 
   let foot = '<td class="name">Daily progress</td>';
@@ -898,10 +927,10 @@ function viewRoutines() {
     </div>
     ${rs.length ? `
     <div class="kpis">
-      <div class="card kpi donut-kpi">${donut(possible ? totalChecks / possible * 100 : 0, 76, 10)}<div><span class="eyebrow">Month so far</span><span class="note num">${totalChecks} of ${possible} check-ins</span></div></div>
-      <div class="card kpi"><span class="eyebrow">Perfect days</span><span class="val">${perfect}</span><span class="note">Every routine ticked</span></div>
-      <div class="card kpi"><span class="eyebrow">Check-ins</span><span class="val">${totalChecks}</span><span class="note">${rs.length} routine${rs.length === 1 ? '' : 's'} tracked</span></div>
-      <div class="card kpi"><span class="eyebrow">Strongest</span><span class="val" style="font-size:20px;line-height:1.15;overflow-wrap:anywhere">${best && best.n ? esc(best.r.name) : '—'}</span><span class="note num">${best && best.n ? best.n + ' days' : 'Tick a day to start'}</span></div>
+      <div class="card kpi donut-kpi" style="--k:var(--c-pink)">${donut(possible ? totalChecks / possible * 100 : 0, 76, 10)}<div><span class="eyebrow">Month so far</span><span class="note num">${totalChecks} of ${possible} check-ins</span></div></div>
+      <div class="card kpi" style="--k:var(--c-sun)"><span class="eyebrow">Perfect days</span><span class="val">${perfect}</span><span class="note">Every routine ticked</span></div>
+      <div class="card kpi" style="--k:var(--c-teal)"><span class="eyebrow">Check-ins</span><span class="val">${totalChecks}</span><span class="note">${rs.length} routine${rs.length === 1 ? '' : 's'} tracked</span></div>
+      <div class="card kpi" style="--k:var(--c-violet)"><span class="eyebrow">Strongest</span><span class="val" style="font-size:20px;line-height:1.15;overflow-wrap:anywhere">${best && best.n ? esc(best.r.name) : '—'}</span><span class="note num">${best && best.n ? best.n + ' days' : 'Tick a day to start'}</span></div>
     </div>
     <div class="tracker-wrap"><table class="tracker"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody><tfoot><tr>${foot}</tr></tfoot></table></div>` :
     `<div class="card empty"><strong>No routines yet</strong><span>Routines are things you repeat, like reading or a workout. Add one below, then tick off each day you do it.</span>${!hasExamples() ? '<div class="row"><button class="btn" type="button" data-act="examples">Load examples</button></div>' : ''}</div>`}

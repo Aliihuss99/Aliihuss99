@@ -57,7 +57,7 @@ def icon(size: int) -> Image.Image:
     # three ledger lines with a tick on the first
     for i, y in enumerate((170, 256, 342)):
         d.rounded_rectangle([200 * s, (y - 14) * s, 400 * s, (y + 14) * s], radius=14 * s,
-                            fill="#ffffff" if i == 0 else "#8a8a8a")
+                            fill=("#ff6a2b", "#9b88ff", "#2fd3c6")[i])
         d.rounded_rectangle([108 * s, (y - 30) * s, 168 * s, (y + 30) * s], radius=14 * s,
                             fill="#ffffff" if i == 0 else None, outline="#ffffff", width=max(1, int(10 * s)))
     d.line([(122 * s, 170 * s), (134 * s, 184 * s), (156 * s, 154 * s)], fill="#000000", width=max(2, int(12 * s)), joint="curve")
