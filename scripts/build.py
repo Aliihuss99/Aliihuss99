@@ -94,6 +94,9 @@ def main() -> None:
     (OUT / "manifest.webmanifest").write_text(MANIFEST)
     (OUT / "sw.js").write_text(SW)
     (OUT / ".nojekyll").write_text("")
+    cname = ROOT / "CNAME"  # custom domain, set from GitHub Pages settings
+    if cname.exists():
+        (OUT / "CNAME").write_text(cname.read_text())
     for n in (180, 192, 512):
         icon(n).save(OUT / f"icon-{n}.png")
     print("built", OUT)
